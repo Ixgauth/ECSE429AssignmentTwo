@@ -1,0 +1,9 @@
+[comment encoding = UTF-8 /]
+[module generate('http:///urn.ecore','http:///grl.ecore', 'http:///ucm.ecore', 'http:///urncore.ecore', 'http:///asd.ecore', 'http:///fm.ecore', 'http:///ucmscenarios.ecore' )]
+
+
+[template public generateElement(aURNspec : URNspec)]
+	[file ('both.txt', false, 'UTF-8')]
+	[/file]
+
+[/template]
