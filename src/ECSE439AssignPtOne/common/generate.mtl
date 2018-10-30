@@ -4,6 +4,58 @@
 
 [template public generateElement(aURNspec : URNspec)]
 	[file ('both.txt', false, 'UTF-8')]
+	[generateFeature(aURNspec.grlspec) /]
 	[/file]
 
 [/template]
+
+[template public generateFeature(aGRLSpec : GRLspec) post (trim())]
+	[for (elem : IntentionalElement | aGRLSpec.intElements)]
+		[if (elem.type.toString() = 'Feature' and (findRoot(elem.linksSrc)))]
+			[insertRoot(elem, aGRLSpec)/]
+		[/if]
+	[/for]
+[/template]
+
+[template public insertRoot(intElem : IntentionalElement, agrlSpec : GRLspec) post (trim())]
+features [featureBlock(intElem)/]
+[/template]
+
+[template public featureBlock(intElem : IntentionalElement) post (trim())]
+[intElem.name /] [getDecompType(intElem) /] 
+	[if (checkForChildren(intElem.linksDest))]
+		{
+		[for (link : ElementLink | intElem.linksDest)]
+			[if (link.name.startsWith('Optional') or link.name.startsWith('Manditory'))]
+				[getLinkType(link)/] [featureBlock(convertToIntElem(link.src)) /]
+			[/if]
+		[/for]
+		}
+	[/if]
+[/template]
+
+[template public getLinkType(link : ElementLink) post (trim())]
+[if (link.name.startsWith('Optional'))]
+optional
+[/if]
+
+[if (link.name.startsWith('Manditory'))]
+manditory
+[/if]
+[/template]
+
+[query public findRoot(links:OrderedSet(ElementLink)): Boolean = 
+	links -> isEmpty()
+/]
+
+[query public convertToIntElem(elem: GRLLinkableElement) : IntentionalElement =
+	elem
+/]
+
+[query public getDecompType(intElem : IntentionalElement) : String = 
+	(intElem.decompositionType.toString().toUpper())
+/]
+
+[query public checkForChildren(links:OrderedSet(ElementLink)) : Boolean = 
+	links -> notEmpty()
+/]
