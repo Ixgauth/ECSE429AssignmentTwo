@@ -6,8 +6,28 @@
 [comment @main/]
 [file ('both.txt', false, 'UTF-8')]
 [generateFeature(aURNspec.grlspec) /]
+[generateGoal(aURNspec.grlspec, aURNspec.urndef) /]
 [/file]
 [/template]
+
+[template public generateGoal(aGRLSpec :GRLspec, aURNDef : URNdefinition) post (trim())]
+[for (actor : Actor | aGRLSpec.actors)]
+actor [actor.name/] [if (getContainedNodes(aGRLSpec, findActorRef(aURNDef, actor))->size()) > 0] {
+[for (intElem : IntentionalElement | (getContainedNodes(aGRLSpec, findActorRef(aURNDef, actor))))]
+  [getGRLType(intElem)/] [intElem.name/]
+[/for]
+}
+[/if]
+[/for]
+[/template]
+
+[template public getGRLType(intElem : IntentionalElement) post (trim())]
+[if intElem.name.startsWith('Soft')]softgoal[/if]
+[if not intElem.name.startsWith('Soft')][intElem.type.toString().toLower()/][/if]
+[/template]
+
+
+
 
 [template public generateFeature(aGRLSpec : GRLspec) post (trim())]
 [for (elem : IntentionalElement | aGRLSpec.intElements)]
@@ -41,6 +61,7 @@ mandatory
 [/if]
 [/template]
 
+
 [query public findRoot(links:OrderedSet(ElementLink)): Boolean = 
 links -> isEmpty()
 /]
@@ -56,4 +77,12 @@ elem
 
 [query public checkForChildren(links:OrderedSet(ElementLink)) : Boolean = 
 links -> notEmpty()
+/]
+
+[query public findActorRef(aURNDef : URNdefinition, actor: Actor) : IURNContainerRef = 
+(aURNDef.specDiagrams->first()).contRefs->select(i|i.oclIsTypeOf(ActorRef))->select(i | i.contDef = actor) -> first()
+/]
+
+[query public getContainedNodes(aGRLSpec : GRLspec, ref : IURNContainerRef) : OrderedSet(IntentionalElement) =
+(aGRLSpec.intElements -> select(i| ref.nodes -> includes(i.refs -> first())))
 /]

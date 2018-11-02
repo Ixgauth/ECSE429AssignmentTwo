@@ -1,20 +1,32 @@
 features Root {
-  optional FeatureA
-  mandatory FeatureC OR{
-     FeatureC1 XOR{
-        FeatureC11
-        FeatureC12
+  mandatory FeatureA
+  mandatory FeatureC XOR{
+     FeatureC1 {
+       mandatory FeatureC11
+       optional FeatureC12
      }
      FeatureC2
+     FeatureC3
   }
-  optional FeatureB XOR{
-     FeatureB1 {
-       mandatory FeatureB11
-       mandatory FeatureB12
-     }
+  optional FeatureB OR{
+     FeatureB1
      FeatureB2
   }
-  optional FeatureD {
-    optional FeatureD1
-  }
+}
+actor ActorA {
+  softgoal $SoftgoalA$
+  goal $GoalA1$
+  goal $GoalA2$
+  task $TaskA1$
+  task $TaskA2$
+  task $TaskA3$
+  ressource $ResourceA$
+}
+actor ActorB {
+  softgoal $SoftgoalB$
+  goal $GoalB$
+  task $TaskB1$
+  task $TaskB2$
+  ressource $ResourceB$
+  task $TaskB3$
 }
