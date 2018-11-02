@@ -120,6 +120,7 @@
       </nodes>
       <nodes xsi:type="grl:Belief" name="Belief87" id="87" description="BeliefA" x="333" y="95" contRef="50" succ="//@urndef/@specDiagrams.0/@connections.2" author="gm">
         <metadata name="_width" value="110"/>
+        
         <metadata name="_height" value="45"/>
       </nodes>
       <nodes xsi:type="grl:Belief" name="Belief88" id="88" description="BeliefB" x="659" y="362" contRef="52" succ="//@urndef/@specDiagrams.0/@connections.3" author="gm">

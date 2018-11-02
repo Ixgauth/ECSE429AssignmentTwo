@@ -10,11 +10,13 @@
 [/file]
 [/template]
 
-[template public generateGoal(aGRLSpec :GRLspec, aURNDef : URNdefinition) post (trim())]
+[template public generateGoal(aGRLSpec :GRLspec, aURNDef : URNdefinition)]
+
 [for (actor : Actor | aGRLSpec.actors)]
+
 actor [actor.name/] [if (getContainedNodes(aGRLSpec, findActorRef(aURNDef, actor))->size()) > 0] {
 [for (intElem : IntentionalElement | (getContainedNodes(aGRLSpec, findActorRef(aURNDef, actor))))]
-  [getGRLType(intElem)/] [intElem.name/]
+[generateGRLBlock(aGRLSpec, aURNDef, intElem)/]
 [/for]
 }
 [/if]
@@ -23,9 +25,41 @@ actor [actor.name/] [if (getContainedNodes(aGRLSpec, findActorRef(aURNDef, actor
 
 [template public getGRLType(intElem : IntentionalElement) post (trim())]
 [if intElem.name.startsWith('Soft')]softgoal[/if]
-[if not intElem.name.startsWith('Soft')][intElem.type.toString().toLower()/][/if]
+[if not intElem.name.startsWith('Soft')]
+[if intElem.type.toString().toLower().startsWith('ress')]resource[/if]
+[if not intElem.type.toString().toLower().startsWith('ress')][intElem.type.toString().toLower()/][/if]
+[/if]
 [/template]
 
+[template public generateGRLBlock(aGRLSpec: GRLspec, aURNDef : URNdefinition, intElem: IntentionalElement)]
+  [getGRLType(intElem)/] [intElem.name/]{
+[for (aBeliefLink : BeliefLink | (getBeliefLinks(aURNDef, intElem)))]
+    [aBeliefLink.source.eGet('description')/]
+[/for]
+[if intElem.importanceQuantitative > 0]
+    importance [intElem.importanceQuantitative/]
+[/if]
+[for (link : ElementLink | aGRLSpec.links -> select(i|i.src=intElem)) ]
+	[getContributionType(link)/]
+[/for]
+  }
+[/template]
+
+[template public getContributionType(link: ElementLink) post (trim())]
+[if (link.oclIsTypeOf("Contribution"))]contributesTo [link.dest.name/] with [link.eGet('quantitativeContribution')/][/if]
+[if (link.oclIsTypeOf("Decomposition"))][getGRLDecomposition(link.dest.convertToIntElem())/] decomposes [link.dest.name/][/if]
+[if (link.oclIsTypeOf("Dependency"))]dependsOn [getActor(link)/].[link.dest.name/] [/if]
+[/template]
+
+[template public getGRLDecomposition(intElem : IntentionalElement) post (trim())]
+[if intElem.decompositionType.toString().startsWith('Xor')]xor[/if]
+[if intElem.decompositionType.toString().startsWith('Or')]or[/if]
+[if not intElem.decompositionType.toString().startsWith('Xor') and not intElem.decompositionType.toString().startsWith('Or')]and[/if]
+[/template]
+
+[template public getActor(link: ElementLink) post (trim())]
+[link.dest.eGet('refs')->first().contRef.contDef.eGet('name')/]
+[/template]
 
 
 
@@ -85,4 +119,8 @@ links -> notEmpty()
 
 [query public getContainedNodes(aGRLSpec : GRLspec, ref : IURNContainerRef) : OrderedSet(IntentionalElement) =
 (aGRLSpec.intElements -> select(i| ref.nodes -> includes(i.refs -> first())))
+/]
+
+[query public getBeliefLinks(aURNDef : URNdefinition, intElem : IntentionalElement) : OrderedSet(BeliefLink) = 
+(aURNDef.specDiagrams->first()).connections->select(i|i.oclIsTypeOf(BeliefLink))->select(i|i.target = intElem.refs->first())
 /]
